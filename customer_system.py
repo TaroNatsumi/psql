@@ -23,12 +23,15 @@ def show_med_product():
         print(f"Error reading products: {e}")
 
 
-def buy(first_name, second_name, product_name, count, price, time):
+def buy(first_name, second_name, product_name, product_count, product_time):
     try:
         with conn.cursor() as cur:
-            cur.execute("INSERT INTO costumer (first_name, second_name, product_name, count, price, time) VALUES (%s, %s, %s, %s, (SELECT price FROM medical_product WHERE name = %s), %s)", (first_name, second_name, product_name, count, price, time))
-            cur.execute("UPDATA medical_product SET count = count - %s WHERE name = %s", (count))
+            cur.execute("SELECT price FROM medical_product WHERE name = %s", (product_name,))
+            product_price = cur.fetchone()
+            cur.execute("INSERT INTO costumer (first_name, second_name, product_name, product_count, product_price, product_time) VALUES (%s, %s, %s, %s, %s, %s)", (first_name, second_name, product_name, product_count, product_price, product_time))
+            cur.execute("UPDATE medical_product SET count = count - %s WHERE name = %s", (product_count, product_name))
         conn.commit()
-        print("Product created successfully!")
+        print("Product bought successfully!")
     except psycopg2.Error as e:
-        print(f"Error creating product: {e}")
+        print(f"Error buying product: {e}")
+
